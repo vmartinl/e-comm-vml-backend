@@ -76,6 +76,7 @@ class CartController extends AbstractController
 
         $cartLine = new CartLine();
         $cartLine
+            ->setCart($cart)
             ->setProduct($product)
             ->setQuantity($quantity);
         $managerRegistry->getManager()->flush();
