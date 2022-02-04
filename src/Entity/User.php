@@ -123,4 +123,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
     }
+
+    /**
+     * @return string
+     */
+    public function getToken(): string
+    {
+        return base64_encode(sprintf('%s-%s-%s-%d', $this->email, $this->id, $this->password, time()));
+    }
 }
