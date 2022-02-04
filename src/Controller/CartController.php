@@ -155,14 +155,16 @@ class CartController extends AbstractController
      * @Route("/cart/confirm", name="cart_confirm", methods={"POST"})
      *
      * @param CartRepository $cartRepository
-     * @param Session $session
      * @param Mailer $mailer
      *
      * @return Response
      */
-    public function confirm(CartRepository $cartRepository, Session $session, Mailer $mailer)
+    public function confirm(CartRepository $cartRepository, Mailer $mailer)
     {
-        $cart = $this->getCurrentCart($cartRepository, $session);
+        if (!$this->isGranted('IS_AUTHENTICATED_FULLY')) {
+            return new Response('Requires login', Response::HTTP_UNAUTHORIZED);
+        }
+        $cart = $cartRepository->findOneByUser($this->getUser());
 
         if ($cart instanceof Cart) {
             $message = new Message();
