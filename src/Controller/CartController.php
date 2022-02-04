@@ -12,6 +12,11 @@ use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\Mailer\Envelope;
+use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Message;
+use Symfony\Component\Mime\Part\TextPart;
 use Symfony\Component\Routing\Annotation\Route;
 
 
@@ -144,6 +149,31 @@ class CartController extends AbstractController
         $managerRegistry->getManager()->flush();
 
         return $this->json(['cart' => $cart]);
+    }
+
+    /**
+     * @Route("/cart/confirm", name="cart_confirm", methods={"POST"})
+     *
+     * @param CartRepository $cartRepository
+     * @param Session $session
+     * @param Mailer $mailer
+     *
+     * @return Response
+     */
+    public function confirm(CartRepository $cartRepository, Session $session, Mailer $mailer)
+    {
+        $cart = $this->getCurrentCart($cartRepository, $session);
+
+        if ($cart instanceof Cart) {
+            $message = new Message();
+            $message->setBody(new TextPart('Panier confirmé !'));
+            $envelope = new Envelope(new Address('no-reply@e-comm.vml'), [new Address($this->getUser()->getUserIdentifier())]);
+            $mailer->send($message, $envelope);
+
+            return new Response(Response::HTTP_OK);
+        }
+
+        $this->createNotFoundException('Empty cart');
     }
 
     /**
